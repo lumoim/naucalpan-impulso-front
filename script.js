@@ -1,0 +1,533 @@
+/**
+ * script.js — Integrador de la plataforma "Naucalpan Impulso"
+ * -------------------------------------------------------------
+ * Orquesta todo (contrato fase2-arquitectura.md §10):
+ *   1. Genera un banner por proyecto desde window.PROYECTOS.
+ *   2. Siembra window.Pulso con el estado base de cada proyecto.
+ *   3. Construye el panel de detalle (#panel) en sitio, con gráficas
+ *      del motor propio (window.TechCharts) y cifras vivas.
+ *   4. Refresca en cada tick (6-8 s): cifras del encabezado, hora y
+ *      los valores vivos del panel abierto.
+ *
+ * Cero dependencias, cero fetch, cero módulos ES: script clásico.
+ * Comentarios en español.
+ */
+(function () {
+  'use strict';
+
+  var PROYECTOS = window.PROYECTOS || [];
+  var POSITIVO = '#34C98E', NEUTRO = '#C9BFC1', NEGATIVO = '#E2574C';
+
+  var reel = document.getElementById('reel');
+  var panel = document.getElementById('panel');
+  var horaEl = document.getElementById('hora');
+  var cMenciones = document.getElementById('cifra-menciones');
+  var cPositivo = document.getElementById('cifra-positivo');
+  var cAvance = document.getElementById('cifra-avance');
+
+  // Si algo del contrato no cargó, mejor no inventar: no hay nada que integrar.
+  if (!window.TechCharts || !window.Pulso || !window.Reveal || !PROYECTOS.length) { return; }
+
+  // ---------- utilidades ----------
+
+  function crear(tag, clase, texto) {
+    var el = document.createElement(tag);
+    if (clase) { el.className = clase; }
+    if (texto != null) { el.textContent = texto; }
+    return el;
+  }
+
+  // Formato numérico local (1,234 / 4.8).
+  function numero(n, dec) {
+    return Number(n).toLocaleString('es-MX', {
+      minimumFractionDigits: dec || 0,
+      maximumFractionDigits: dec || 0
+    });
+  }
+
+  // Etiqueta corta para la gráfica de barras: sin paréntesis, máx. 30 caracteres.
+  function etiquetaCorta(t) {
+    t = String(t).replace(/\s*\([^)]*\)\s*$/, '').trim();
+    return t.length > 30 ? t.slice(0, 29) + '…' : t;
+  }
+
+  // Avance global de un proyecto = promedio simple de sus cuatro fases.
+  function avanceGlobal(p) {
+    var fases = p.detalle.cronograma, suma = 0;
+    for (var i = 0; i < fases.length; i++) { suma += fases[i].avance; }
+    return Math.round((suma / fases.length) * 10) / 10;
+  }
+
+  // ---------- 1) Banners del reel ----------
+
+  var pendientes = []; // [{banner, cuenta:[{el, valor, decimales}]}] — count-up al entrar
+
+  function construirBanner(p, i) {
+    var banner = crear('article', 'banner');
+    banner.dataset.id = p.id;
+    banner.style.setProperty('--acento', p.acento);
+
+    // TAREA-23B8-2026-11-11: imagen de fondo opcional del proyecto (dataURL dentro
+    // del propio objeto: sin fetch, compatible con file:// y con el CSP img-src data:).
+    // También acepta una ruta de archivo tipo 'assets/proyectos/<archivo>.jpg'.
+    if (p.imagenFondo) {
+      var fondo = crear('img', 'banner-fondo');
+      fondo.src = p.imagenFondo;
+      fondo.alt = '';
+      fondo.setAttribute('aria-hidden', 'true');
+      banner.appendChild(fondo);
+      banner.appendChild(crear('div', 'banner-velo'));
+      // imagenTransparencia: 0-100 = % de velo oscuro sobre la foto (qué tan
+      // atenuada queda). Se acota a 70-95 para que el texto siempre sea legible
+      // y todos los banners queden homologados; sin el campo, velo fijo 93/80/58.
+      var tr = parseFloat(p.imagenTransparencia);
+      if (!isFinite(tr)) tr = 93;
+      tr = Math.min(95, Math.max(70, tr));
+      banner.style.setProperty('--velo-a', (tr / 100).toFixed(2));
+      banner.style.setProperty('--velo-b', (Math.round(tr * 0.86) / 100).toFixed(2));
+      banner.style.setProperty('--velo-c', (Math.round(tr * 0.62) / 100).toFixed(2));
+      banner.classList.add('con-fondo');
+    }
+
+    // Columna izquierda: número del proyecto (1..N, arábigo) + textos.
+    var info = crear('div', 'banner-info');
+    info.setAttribute('data-reveal', 'izq');
+
+    var num = crear('span', 'banner-numero', String(i + 1));
+    num.setAttribute('data-parallax', '0.05');
+    info.appendChild(num);
+
+    info.appendChild(crear('span', 'banner-chip', p.categoria));
+    info.appendChild(crear('h2', 'banner-titular', p.banner.titular));
+    info.appendChild(crear('p', 'banner-descripcion', p.banner.descripcion));
+
+    var etiquetas = crear('div', 'banner-etiquetas');
+    p.banner.etiquetas.forEach(function (e) {
+      etiquetas.appendChild(crear('span', 'chip', e));
+    });
+    info.appendChild(etiquetas);
+
+    var boton = crear('button', 'banner-boton');
+    boton.type = 'button';
+    // La flecha va inline: cero dependencias, cero imágenes externas.
+    boton.innerHTML = 'Ver análisis <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    boton.addEventListener('click', function () { abrirPanel(p, boton); });
+    info.appendChild(boton);
+
+    // Columna derecha: tres stats con count-up.
+    var stats = crear('div', 'banner-stats');
+    var cuenta = [];
+    p.banner.stats.forEach(function (s, j) {
+      var stat = crear('div', 'stat');
+      stat.setAttribute('data-reveal', 'der');
+      stat.setAttribute('data-delay', String(Math.min(j + 1, 3)));
+
+      var valor = crear('div', 'stat-valor');
+      var cifra = crear('span');            // objetivo del count-up (elemento pelado)
+      valor.appendChild(cifra);
+      if (s.sufijo) { valor.appendChild(crear('small', null, s.sufijo)); } // el sufijo vive fuera
+      stat.appendChild(valor);
+      stat.appendChild(crear('div', 'stat-etiqueta', s.etiqueta));
+      stats.appendChild(stat);
+
+      cuenta.push({ el: cifra, valor: s.valor, decimales: s.decimales || 0 });
+    });
+
+    banner.appendChild(info);
+    banner.appendChild(stats);
+
+    // Identificador del proyecto en la esquina superior derecha: el dato que
+    // se lee de lejos (puntos de aprobación + alcance en redes). LO LLEVAN
+    // LOS SEIS PROYECTOS, no solo los que traen pronóstico escrito; si falta
+    // un dato se muestra «s/d» en lugar de romper el banner.
+    var pts = (p.pronostico && p.pronostico.puntos) ? p.pronostico.puntos : 0;
+    var idn = crear('div', 'banner-identificador');
+    idn.appendChild(crear('span', 'bi-rotulo', 'Impacto en la aprobación'));
+    var valorId = crear('div', 'bi-valor');
+    valorId.appendChild(crear('b', null, pts ? '+' + numero(pts) : 's/d'));
+    valorId.appendChild(crear('small', null, 'puntos'));
+    idn.appendChild(valorId);
+    if (p.impactoRed && p.impactoRed.alcance) {
+      var detId = crear('span', 'bi-detalle');
+      detId.appendChild(document.createTextNode('alcance estimado '));
+      detId.appendChild(crear('b', null, numero(p.impactoRed.alcance) + ' cuentas'));
+      idn.appendChild(detId);
+    }
+    idn.appendChild(crear('span', 'bi-pie', 'cifra de muestra'));
+    banner.appendChild(idn);
+
+    reel.appendChild(banner);
+    pendientes.push({ banner: banner, cuenta: cuenta });
+  }
+
+  PROYECTOS.forEach(construirBanner);
+
+  // Count-up de cada banner hasta que entra al viewport (una sola vez).
+  function armarCifras() {
+    if (!('IntersectionObserver' in window)) {
+      pendientes.forEach(dispararCifras);
+      pendientes = [];
+      return;
+    }
+    var obs = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (en) {
+        if (!en.isIntersecting) { return; }
+        obs.unobserve(en.target);
+        for (var k = 0; k < pendientes.length; k++) {
+          if (pendientes[k].banner === en.target) {
+            dispararCifras(pendientes[k]);
+            pendientes.splice(k, 1);
+            break;
+          }
+        }
+      });
+    }, { threshold: 0.3 });
+    pendientes.forEach(function (pd) { obs.observe(pd.banner); });
+  }
+
+  function dispararCifras(pd) {
+    pd.cuenta.forEach(function (c) {
+      window.TechCharts.countUp(c.el, c.valor, { duracion: 1400, decimales: c.decimales });
+    });
+  }
+
+  // ---------- 2) Siembra del Pulso ----------
+
+  PROYECTOS.forEach(function (p) {
+    window.Pulso.semilla(p.id, {
+      mencionesHora: p.detalle.redes.mencionesHora,
+      sentimiento: p.detalle.redes.sentimiento,
+      avance: avanceGlobal(p)
+    });
+  });
+
+  // ---------- 3) Cifras del encabezado y hora ----------
+
+  function pintarCabecera() {
+    var totalM = 0, ponderado = 0, sumaAv = 0, n = 0;
+    PROYECTOS.forEach(function (p) {
+      var e = window.Pulso.estado(p.id);
+      if (!e) { return; }
+      totalM += e.mencionesHora;
+      ponderado += e.sentimiento.positivo * e.mencionesHora;
+      sumaAv += e.avance;
+      n++;
+    });
+    if (!n || !totalM) { return; }
+    cMenciones.textContent = numero(totalM);
+    cPositivo.textContent = numero(Math.round(ponderado / totalM)) + '%';
+    cAvance.textContent = numero(Math.round(sumaAv / n)) + '%';
+  }
+
+  function pintarHora() {
+    horaEl.textContent = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // ---------- 4) Panel de detalle ----------
+
+  var panelAbierto = null;  // proyecto cuyo análisis está en pantalla
+  var origenFoco = null;    // botón que abrió el panel (para devolver el foco)
+  var graficas = {};         // instancias vivas: impacto, popularidad, dona, menciones
+  var vivo = {};            // elementos de cifras vivas del panel
+
+  function tarjeta(rotulo, titulo, amplia) {
+    var t = crear('div', amplia ? 'tarjeta tarjeta--ancha' : 'tarjeta');
+    var tt = crear('div', 'tarjeta-titulo');
+    tt.appendChild(crear('small', null, rotulo));
+    tt.appendChild(crear('h4', null, titulo));
+    t.appendChild(tt);
+    return t;
+  }
+
+  // Contenedor con canvas: el motor añade aquí su tooltip y su leyenda.
+  function lienzo(clase) {
+    var c = crear('div', clase || 'grafica');
+    c.appendChild(crear('canvas'));
+    return c;
+  }
+
+  function segmentosSentimiento(p) {
+    var e = window.Pulso.estado(p.id);
+    var s = e ? e.sentimiento : p.detalle.redes.sentimiento;
+    return [
+      { etiqueta: 'Positivo', valor: s.positivo, color: POSITIVO },
+      { etiqueta: 'Neutro',   valor: s.neutro,   color: NEUTRO },
+      { etiqueta: 'Negativo', valor: s.negativo, color: NEGATIVO }
+    ];
+  }
+
+  // Serie horaria escalada al valor vivo: la forma del día se conserva,
+  // el nivel sigue el pulso actual.
+  function serieMencionesViva(p) {
+    var e = window.Pulso.estado(p.id);
+    var factor = e && p.detalle.redes.mencionesHora ? e.mencionesHora / p.detalle.redes.mencionesHora : 1;
+    return p.detalle.redes.serieMenciones.map(function (d) {
+      return { x: d.x, y: Math.max(0, Math.round(d.y * factor)) };
+    });
+  }
+
+  function refrescarVivo() {
+    if (!panelAbierto || !vivo.mencionesB) { return; }
+    var e = window.Pulso.estado(panelAbierto.id);
+    if (!e) { return; }
+    vivo.mencionesB.textContent = numero(e.mencionesHora);
+    vivo.avanceB.textContent = numero(e.avance, 1) + '%';
+  }
+
+  function cerrarPanel() {
+    if (!panelAbierto) { return; }
+    Object.keys(graficas).forEach(function (k) {
+      if (graficas[k]) { graficas[k].destroy(); graficas[k] = null; }
+    });
+    panel.classList.remove('is-visible');
+    panel.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+    panelAbierto = null;
+    vivo = {};
+    if (origenFoco && origenFoco.focus) { origenFoco.focus(); }
+    origenFoco = null;
+    // El contenido se limpia al terminar el desvanecido (no antes).
+    setTimeout(function () {
+      if (!panelAbierto) { panel.innerHTML = ''; }
+    }, 500);
+  }
+
+  function abrirPanel(p, origen) {
+    cerrarPanel(); // por si quedaba algo abierto
+    panelAbierto = p;
+    origenFoco = origen || null;
+    panel.style.setProperty('--acento', p.acento);
+
+    var interior = crear('div', 'panel-interior');
+
+    // Cabecera pegajosa con el acento del proyecto.
+    var cab = crear('header', 'panel-cabecera');
+    var caja = crear('div');
+    caja.appendChild(crear('h3', null, p.titulo));
+    caja.appendChild(crear('span', 'panel-subtitulo', p.categoria + ' · ' + p.subtitulo));
+    var cerrar = crear('button', 'panel-cerrar', '✕');
+    cerrar.type = 'button';
+    cerrar.setAttribute('aria-label', 'Cerrar el análisis');
+    cerrar.addEventListener('click', cerrarPanel);
+    cab.appendChild(caja);
+    cab.appendChild(cerrar);
+    interior.appendChild(cab);
+
+    var cuerpo = crear('div', 'panel-cuerpo');
+
+    // — Resumen ejecutivo —
+    var tRes = tarjeta('Resumen ejecutivo', 'De qué se trata', true);
+    p.detalle.resumen.split('\n\n').forEach(function (parrafo) {
+      if (parrafo.trim()) { tRes.appendChild(crear('p', null, parrafo.trim())); }
+    });
+    cuerpo.appendChild(tRes);
+
+    // — Impacto en redes: bloque ESTANDARIZADO, idéntico en los seis proyectos —
+    // Cadena de cuatro pasos (zona → densidad → alcance → menciones) más el
+    // cierre en puntos de aprobación. Así el impacto social se visualiza igual
+    // en todos, se lee de un vistazo y no depende de que el proyecto traiga
+    // gráficas propias.
+    var ir = p.impactoRed || {};
+    var eIr = window.Pulso.estado(p.id);
+    var porHora = eIr ? eIr.mencionesHora : p.detalle.redes.mencionesHora;
+    var porDia = Math.round(porHora * 24);
+    var pasos = [
+      { rotulo: 'Zona de influencia', valor: ir.zona || 'por definir', nota: 'Colonias y corredores donde aterriza el proyecto' },
+      { rotulo: 'Densidad poblacional', valor: ir.densidad ? numero(ir.densidad) + ' hab/km²' : 's/d', nota: ir.poblacion ? numero(ir.poblacion) + ' habitantes en la zona' : 'población por definir' },
+      { rotulo: 'Alcance en redes', valor: ir.alcance ? numero(ir.alcance) : 's/d', nota: 'Cuentas activas estimadas (55% de penetración digital)' },
+      { rotulo: 'Menciones por día', valor: numero(porDia), nota: 'Sobre este proyecto, según el pulso en vivo' }
+    ];
+    var tIred = tarjeta('Impacto en redes', 'De la densidad de la zona al voto', true);
+    var cadena = crear('div', 'impacto-cadena');
+    pasos.forEach(function (ps, j) {
+      var paso = crear('div', 'impacto-paso');
+      paso.appendChild(crear('small', null, j < 9 ? '0' + (j + 1) : String(j + 1)));
+      paso.appendChild(crear('span', 'paso-rotulo', ps.rotulo));
+      paso.appendChild(crear('b', null, ps.valor));
+      paso.appendChild(crear('span', 'paso-nota', ps.nota));
+      cadena.appendChild(paso);
+    });
+    tIred.appendChild(cadena);
+    var cierre = crear('div', 'impacto-cierre');
+    cierre.appendChild(crear('small', null, 'Efecto estimado en la aprobación del alcalde'));
+    cierre.appendChild(crear('b', null, pts ? '+' + pts + ' puntos' : 's/d'));
+    cierre.appendChild(crear('span', 'impacto-nota',
+      p.pronostico ? p.pronostico.nota : 'Sin pronóstico cargado para este proyecto.'));
+    tIred.appendChild(cierre);
+    cuerpo.appendChild(tIred);
+
+    // — Impacto social: barras + lista con notas —
+    var tImp = tarjeta('Impacto social', 'Qué cambiaría y en qué cantidad', true);
+    var gImp = lienzo('grafica');
+    tImp.appendChild(gImp);
+    var lista = crear('div', 'impacto-lista');
+    p.detalle.impacto.forEach(function (it) {
+      var fila = crear('div', 'impacto-item');
+      fila.appendChild(crear('b', null, numero(it.valor)));
+      var texto = crear('span', null, it.etiqueta);
+      texto.appendChild(document.createElement('br'));
+      texto.appendChild(crear('small', null, it.nota));
+      fila.appendChild(texto);
+      lista.appendChild(fila);
+    });
+    tImp.appendChild(lista);
+    cuerpo.appendChild(tImp);
+
+    // — Índice de aprobación: línea con proyección —
+    var tPop = tarjeta('Índice de aprobación', 'Tendencia y proyección');
+    var gPop = lienzo('grafica');
+    tPop.appendChild(gPop);
+    tPop.appendChild(crear('p', null, 'Serie mensual de aprobación estimada; el último punto («Proy») es la proyección del modelo al cierre del periodo.'));
+    if (p.pronostico) {
+      var pron = crear('p', 'panel-pronostico');
+      pron.appendChild(crear('strong', null, 'Proyección de impacto: +' + p.pronostico.puntos + ' pts. '));
+      pron.appendChild(document.createTextNode(p.pronostico.nota));
+      tPop.appendChild(pron);
+    }
+    cuerpo.appendChild(tPop);
+
+    // — Redes en vivo: dona de sentimiento + serie de menciones + hashtags —
+    var tRed = tarjeta('Redes en vivo', 'Conversación de este momento');
+    var grid = crear('div', 'redes-grid');
+    grid.appendChild(lienzo('donut-wrap'));
+    var lado = crear('div');
+    var menc = crear('div', 'menciones');
+    var mencB = crear('b', null, '0');
+    menc.appendChild(mencB);
+    menc.appendChild(crear('span', null, 'menciones por hora en este momento'));
+    lado.appendChild(menc);
+    var gMen = lienzo('grafica');
+    lado.appendChild(gMen);
+    var tags = crear('div', 'chips');
+    p.detalle.redes.hashtags.forEach(function (h) {
+      tags.appendChild(crear('span', 'hashtag', h));
+    });
+    lado.appendChild(tags);
+    grid.appendChild(lado);
+    tRed.appendChild(grid);
+    cuerpo.appendChild(tRed);
+
+    // — Cronograma: avance global vivo + barras por fase —
+    var tCro = tarjeta('Cronograma', 'Cuatro fases hasta 2027', true);
+    var global = crear('div', 'menciones');
+    var avB = crear('b', null, '0%');
+    global.appendChild(avB);
+    global.appendChild(crear('span', null, 'avance global del programa'));
+    tCro.appendChild(global);
+    var cro = crear('div', 'cronograma');
+    p.detalle.cronograma.forEach(function (f) {
+      var fila = crear('div', 'fase');
+      fila.appendChild(crear('div', 'fase-nombre', f.fase));
+      fila.appendChild(crear('div', 'fase-periodo', f.periodo));
+      var avance = crear('div', 'fase-avance');
+      var pista = crear('div', 'pista');
+      pista.style.setProperty('--avance', String(f.avance));
+      avance.appendChild(pista);
+      avance.appendChild(crear('span', 'avance-texto', f.avance + '%'));
+      fila.appendChild(avance);
+      cro.appendChild(fila);
+    });
+    tCro.appendChild(cro);
+    cuerpo.appendChild(tCro);
+
+    // — Territorio: colonias donde arranca cada proyecto —
+    var tCol = tarjeta('Territorio', 'Colonias donde arranca', true);
+    var chips = crear('div', 'chips');
+    p.detalle.colonias.forEach(function (c, idx) {
+      var chip = crear('span', 'chip');
+      chip.appendChild(crear('b', null, String(idx + 1).length < 2 ? '0' + (idx + 1) : String(idx + 1)));
+      chip.appendChild(document.createTextNode(' ' + c));
+      chips.appendChild(chip);
+    });
+    tCol.appendChild(chips);
+    cuerpo.appendChild(tCol);
+
+    // — Nota de metodología (presentación honesta) —
+    var nota = crear('div', 'nota-metodo');
+    var np = crear('p');
+    np.appendChild(crear('strong', null, 'Nota de metodología. '));
+    np.appendChild(document.createTextNode(
+      p.detalle.popularidad.nota +
+      ' Las demás cifras de este análisis son estimaciones modeladas con fines de presentación y planeación; no constituyen encuestas, resultados oficiales ni compromisos de obra.'
+    ));
+    nota.appendChild(np);
+    cuerpo.appendChild(nota);
+
+    interior.appendChild(cuerpo);
+    panel.innerHTML = '';
+    panel.appendChild(interior);
+
+    // Hacer visible ANTES de crear las gráficas: el motor mide el canvas.
+    panel.classList.add('is-visible');
+    panel.setAttribute('aria-hidden', 'false');
+    document.documentElement.style.overflow = 'hidden';
+
+    graficas.impacto = window.TechCharts.bars(
+      gImp.querySelector('canvas'),
+      {
+        barras: p.detalle.impacto.map(function (it) {
+          return { etiqueta: etiquetaCorta(it.etiqueta), valor: it.valor, color: p.acento };
+        })
+      }
+    );
+    graficas.popularidad = window.TechCharts.line(
+      gPop.querySelector('canvas'),
+      {
+        series: [{ name: 'Aprobación', color: p.acento, data: p.detalle.popularidad.serie }],
+        yUnidad: '%'
+      }
+    );
+    graficas.dona = window.TechCharts.donut(
+      grid.querySelector('.donut-wrap canvas'),
+      { segmentos: segmentosSentimiento(p) }
+    );
+    graficas.menciones = window.TechCharts.line(
+      gMen.querySelector('canvas'),
+      {
+        series: [{ name: 'Menciones', color: p.acento, data: serieMencionesViva(p) }],
+        mostrarPuntos: false
+      }
+    );
+
+    vivo = { mencionesB: mencB, avanceB: avB };
+    refrescarVivo();
+    cerrar.focus();
+  }
+
+  // Cierre por tecla ESC y por clic en el fondo (fuera de .panel-interior).
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && panelAbierto) { cerrarPanel(); }
+  });
+  panel.addEventListener('click', function (ev) {
+    if (ev.target === panel && panelAbierto) { cerrarPanel(); }
+  });
+
+  // ---------- 5) Tick del Pulso: todo lo vivo se refresca ----------
+
+  window.Pulso.iniciar(function () {
+    pintarHora();
+    pintarCabecera();
+    if (panelAbierto) {
+      refrescarVivo();
+      if (graficas.dona) { graficas.dona.update(segmentosSentimiento(panelAbierto)); }
+      if (graficas.menciones) {
+        graficas.menciones.update([
+          { name: 'Menciones', color: panelAbierto.acento, data: serieMencionesViva(panelAbierto) }
+        ]);
+      }
+    }
+  });
+
+  // ---------- 6) Arranque ----------
+
+  armarCifras();      // count-up de stats al entrar al viewport
+  if (window.Ranking && document.getElementById('ranking-municipal')) {
+    window.Ranking.init();   // tablero municipal (components/ranking.js) — sin esto queda vacío
+  }
+  pintarHora();       // sin esperar al primer tick
+  pintarCabecera();
+  window.setInterval(pintarHora, 30000); // la hora camina sola, con paso tranquilo
+  window.Reveal.init();     // observa los [data-reveal] recién generados
+  window.Reveal.parallax();
+  window.Reveal.fondo();
+})();

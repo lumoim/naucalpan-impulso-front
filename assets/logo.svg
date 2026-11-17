@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" fill="none">
+  <!-- Logotipo completo Naucalpan Impulso: emblema + nombre.
+       Tipografías del sistema (cero webfonts). Fondo oscuro del sistema. -->
+  <rect width="300" height="64" rx="12" fill="#130D10"/>
+
+  <!-- Emblema (hexágono-nodo, igual al de la barra y al favicon) -->
+  <g transform="translate(8, 6) scale(1.55)">
+    <path d="M17 3 L29 10 L29 24 L17 31 L5 24 L5 10 Z" fill="rgba(201,162,39,0.10)" stroke="#C9A227" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M17 3 L17 17 M29 10 L17 17 M29 24 L17 17 M17 31 L17 17 M5 24 L17 17 M5 10 L17 17" stroke="rgba(201,162,39,0.55)" stroke-width="1"/>
+    <circle cx="17" cy="17" r="2.6" fill="#E3BC3E"/>
+    <circle cx="17" cy="3"  r="2"   fill="#E3BC3E"/>
+    <circle cx="29" cy="10" r="1.7" fill="#C9A227"/>
+    <circle cx="29" cy="24" r="1.7" fill="#C9A227"/>
+    <circle cx="17" cy="31" r="1.7" fill="#C9A227"/>
+    <circle cx="5"  cy="24" r="1.7" fill="#C9A227"/>
+    <circle cx="5"  cy="10" r="1.7" fill="#C9A227"/>
+  </g>
+
+  <!-- Nombre -->
+  <text x="72" y="33" font-family="Georgia, 'Times New Roman', serif" font-size="19" fill="#F2EFE6">Naucalpan</text>
+  <text x="72" y="53" font-family="Georgia, 'Times New Roman', serif" font-size="19" font-weight="bold" fill="#E3BC3E">Impulso</text>
+
+  <!-- Línea de acento -->
+  <rect x="72" y="12" width="26" height="2" fill="#C9A227"/>
+</svg>

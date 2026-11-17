@@ -1,0 +1,1185 @@
+/* ==========================================================================
+   NAUCALPAN IMPULSO — Hoja de estilos institucional-premium
+   Cartera de proyectos de alto impacto · Naucalpan de Juárez
+   Funciona 100% offline (file://): cero webfonts, cero url() externas,
+   cero imágenes remotas. Todo el color es sistema + custom properties.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1) TOKENS DE DISEÑO (sección 4 del documento de arquitectura)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Paleta base */
+  --fondo: #130D10;        /* casi negro con tinte vino */
+  --panel: #1B1216;
+  --panel-alto: #241A1F;
+  --borde: #2E2027;
+  --dorado: #C9A227;        /* acento principal (planilla dorada) */
+  --dorado-claro: #E3BC3E;
+  --texto: #F2EFE6;         /* títulos */
+  --texto-medio: #C9BFC1;   /* cuerpo */
+  --texto-bajo: #988B8E;    /* meta */
+  --positivo: #34C98E;
+  --negativo: #E2574C;
+
+  /* Tipografía del sistema (sin webfonts) */
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: 'Helvetica Neue', Arial, sans-serif;
+
+  /* Radios */
+  --radio: 14px;
+  --radio-chico: 8px;
+
+  /* Sombras (tonos del propio fondo, nunca negro puro) */
+  --sombra: 0 18px 44px rgba(13, 8, 10, 0.5);
+  --sombra-alta: 0 30px 70px rgba(13, 8, 10, 0.62);
+
+  /* Acento dinámico: script.js lo define inline por banner/panel */
+  --acento: var(--dorado);
+
+  /* Métricas de layout */
+  --ancho-lectura: 1120px;
+  --padre-x: clamp(18px, 4vw, 56px);
+}
+
+/* --------------------------------------------------------------------------
+   2) RESET + BASE
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--fondo);
+  color: var(--texto-medio);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img, svg, canvas { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 700; color: var(--texto); line-height: 1.12; }
+p { margin: 0; }
+a { color: var(--dorado); }
+
+::selection { background: var(--dorado); color: var(--fondo); }
+
+/* Scrollbar fino y oscuro (WebKit) */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: var(--fondo); }
+::-webkit-scrollbar-thumb {
+  background: var(--panel-alto);
+  border-radius: 99px;
+  border: 2px solid var(--fondo);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--borde); }
+
+/* Foco accesible con filo dorado */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--dorado);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   3) FONDO VIVO (canvas de malla dorada — lo dibuja reveal.js)
+   -------------------------------------------------------------------------- */
+#fondo-vivo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   4) BARRA FIJA DE NAVEGACIÓN (header.barra)
+   -------------------------------------------------------------------------- */
+header.barra {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(10px, 2vw, 28px);
+  padding: 12px var(--padre-x);
+  background: rgba(19, 13, 16, 0.72);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+  border-bottom: 1px solid var(--borde);
+}
+
+/* Logo: texto + SVG (script.js los coloca) — aquí solo dejamos el espacio */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.logo svg { width: 34px; height: 34px; flex-shrink: 0; }
+.logo .logo-nombre,
+.logo span, .logo strong {
+  font-family: var(--serif);
+  font-size: clamp(17px, 1.6vw, 21px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--texto);
+  white-space: nowrap;
+}
+.logo strong { color: var(--dorado); }
+
+/* Pulso Ciudadano: cifras vivas + punto verde */
+.pulso {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.8vw, 26px);
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.pulso .pulso-item,
+.pulso figure {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--texto-bajo);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.pulso b, .pulso strong, .pulso .pulso-cifra {
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--texto);
+}
+
+/* Punto verde con parpadeo elegante (pulso cardíaco suave) */
+.pulso-punto,
+.pulso .punto {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--positivo);
+  box-shadow: 0 0 0 0 rgba(52, 201, 142, 0.55);
+  animation: pulso-latido 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pulso-latido {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 201, 142, 0.45); }
+  50%      { opacity: 0.55; box-shadow: 0 0 0 7px rgba(52, 201, 142, 0); }
+}
+
+/* Hora local */
+.hora {
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--texto-bajo);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5) REEL VERTICAL (main#reel)
+   -------------------------------------------------------------------------- */
+main#reel {
+  position: relative;
+  z-index: 1;
+  padding-top: 64px;                    /* espacio para la barra fija */
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3.5vh, 44px);
+}
+
+/* Snap SOLO en escritorio (móvil = scroll libre) */
+@media (min-width: 900px) {
+  main#reel {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 76px;           /* evita que la barra tape el título */
+  }
+  article.banner { scroll-snap-align: start; }
+}
+
+/* --------------------------------------------------------------------------
+   6) BANNER DE PROYECTO (article.banner)
+   -------------------------------------------------------------------------- */
+article.banner {
+  position: relative;
+  flex-shrink: 0;
+  min-height: min(72vh, 640px);
+  margin: 0 auto;
+  width: min(100% - 2 * var(--padre-x), var(--ancho-lectura));
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+  gap: clamp(26px, 4vw, 64px);
+  padding: clamp(28px, 4.5vh, 56px) clamp(28px, 4.5vw, 64px);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background:
+    radial-gradient(120% 130% at 88% 18%,
+      color-mix(in srgb, var(--acento) 11%, transparent) 0%,
+      transparent 58%),
+    var(--panel);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Línea decorativa superior en el acento del proyecto */
+article.banner::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 34%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--acento), transparent);
+  border-radius: 0 3px 3px 0;
+}
+/* Filigrana lateral: repetición del acento en el borde derecho */
+article.banner::after {
+  content: "";
+  position: absolute;
+  right: 0; top: 14%; bottom: 14%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--acento), transparent);
+  opacity: 0.45;
+}
+
+/* --- Columna de texto (izquierda) --- */
+.banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2vh, 22px);
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Número del proyecto (arábigo), serif, opacidad baja, serif, opacidad baja */
+.banner-numero {
+  position: absolute;
+  top: -0.34em;
+  right: -0.06em;
+  font-family: var(--serif);
+  font-size: clamp(120px, 15vw, 240px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--acento);
+  opacity: 0.08;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* Chip de categoría */
+.banner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--acento) 55%, var(--borde));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--acento) 12%, transparent);
+  color: var(--acento);
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Titular serif con tipografía fluida */
+h2.banner-titular {
+  font-size: clamp(28px, 4.2vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--texto);
+  text-wrap: balance;
+  position: relative;
+  z-index: 1;
+}
+
+/* Descripción */
+.banner-descripcion {
+  font-size: clamp(15px, 1.35vw, 17.5px);
+  line-height: 1.68;
+  color: var(--texto-medio);
+  max-width: 56ch;
+  position: relative;
+  z-index: 1;
+}
+
+/* Botón "Ver análisis →" */
+.banner-boton {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(4px, 1.2vh, 10px);
+  padding: 13px 26px;
+  border-radius: var(--radio-chico);
+  background: linear-gradient(180deg, var(--dorado-claro), var(--dorado));
+  color: #171204;
+  font-family: var(--sans);
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 8px 22px rgba(201, 162, 39, 0.28);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s ease, filter 0.35s ease;
+}
+.banner-boton:hover,
+.banner-boton:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(201, 162, 39, 0.42);
+  filter: saturate(1.08);
+}
+.banner-boton:active { transform: translateY(0); }
+.banner-boton svg { width: 16px; height: 16px; }
+
+/* Chips de etiquetas */
+.banner-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: clamp(2px, 0.8vh, 8px);
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Columna de cifras (derecha) --- */
+.banner-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.4vw, 18px);
+  position: relative;
+  z-index: 2;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: clamp(14px, 1.8vw, 22px) clamp(12px, 1.4vw, 18px);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: linear-gradient(180deg, var(--panel-alto), var(--panel));
+}
+.stat-valor {
+  font-family: var(--sans);
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--texto);
+  line-height: 1.05;
+}
+.stat-valor small { font-size: 0.5em; color: var(--acento); }
+.stat-etiqueta {
+  font-size: clamp(11px, 0.95vw, 12.5px);
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--texto-bajo);
+}
+
+/* Hover del banner: elevación + borde en acento */
+article.banner {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.5s ease,
+              box-shadow 0.5s ease;
+}
+article.banner:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--acento) 55%, var(--borde));
+  box-shadow: var(--sombra);
+}
+
+/* TAREA-23B8-2026-11-11: imagen de fondo opcional del banner (dataURL en el objeto) */
+article.banner .banner-fondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+article.banner .banner-velo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Velo sobre la foto: script.js fija --velo-a/b/c por proyecto desde
+     imagenTransparencia (acotado 70-95). Sin imagen o sin el campo, los
+     defaults reproducen el velo original 0.93/0.80/0.58. */
+  background: linear-gradient(100deg, rgba(19, 13, 16, var(--velo-a, 0.93)) 0%, rgba(19, 13, 16, var(--velo-b, 0.8)) 45%, rgba(19, 13, 16, var(--velo-c, 0.58)) 100%);
+}
+article.banner.con-fondo::before,
+article.banner.con-fondo::after { z-index: 2; }
+
+/* --------------------------------------------------------------------------
+   7) ANIMACIONES DE ENTRADA (reveal + variantes izq/der)
+   -------------------------------------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+[data-reveal="izq"] { transform: translateX(-34px); }
+[data-reveal="der"] { transform: translateX(34px); }
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* Retardo escalonado opcional (script.js puede usar data-delay) */
+[data-reveal][data-delay="1"] { transition-delay: 0.09s; }
+[data-reveal][data-delay="2"] { transition-delay: 0.18s; }
+[data-reveal][data-delay="3"] { transition-delay: 0.27s; }
+
+/* --------------------------------------------------------------------------
+   8) PANEL DE DETALLE (overlay a pantalla completa)
+   -------------------------------------------------------------------------- */
+#panel {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(19, 13, 16, 0.97);
+  color: var(--texto-medio);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s ease, visibility 0.45s;
+}
+#panel.is-visible,
+#panel.is-abierto,
+#panel.abierto {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Contenedor interno con ancho de lectura */
+.panel-interior {
+  width: min(100% - 2 * var(--padre-x), var(--ancho-lectura));
+  margin: 0 auto;
+  padding: 0 0 clamp(48px, 8vh, 90px);
+}
+
+/* Cabecera: banda de 4px en el acento + título serif + cierre ✕ */
+.panel-cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px clamp(6px, 1vw, 18px) 20px;
+  background: rgba(19, 13, 16, 0.86);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--borde);
+  border-top: 4px solid var(--acento);
+}
+.panel-cabecera h3,
+.panel-cabecera .panel-titulo {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3vw, 34px);
+  color: var(--texto);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.panel-cabecera .panel-subtitulo {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acento);
+}
+.panel-cerrar {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  color: var(--texto-medio);
+  font-size: 19px;
+  line-height: 1;
+  background: var(--panel);
+  transition: color 0.25s ease, border-color 0.25s ease,
+              transform 0.25s ease, background 0.25s ease;
+}
+.panel-cerrar:hover,
+.panel-cerrar:focus-visible {
+  color: var(--fondo);
+  background: var(--dorado);
+  border-color: var(--dorado);
+  transform: rotate(90deg);
+}
+
+/* Cuerpo: retícula de 2 columnas en escritorio */
+.panel-cuerpo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(16px, 2.4vw, 30px);
+  padding-top: clamp(24px, 4vh, 44px);
+}
+.panel-cuerpo > .tarjeta-amplia,
+.tarjeta[data-span="2"],
+.tarjeta--ancha { grid-column: 1 / -1; }
+
+/* Tarjetas de sección */
+.tarjeta {
+  padding: clamp(20px, 2.6vw, 32px);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--panel);
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Título de tarjeta: rótulo pequeño en mayúsculas + título serif */
+.tarjeta-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--borde);
+}
+.tarjeta-titulo small,
+.tarjeta-titulo .tarjeta-rotulo {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--texto-bajo);
+}
+.tarjeta-titulo h4,
+.tarjeta-titulo .tarjeta-encabezado {
+  font-family: var(--serif);
+  font-size: clamp(19px, 2vw, 24px);
+  color: var(--texto);
+  line-height: 1.2;
+}
+
+/* Texto de resumen / impacto */
+.tarjeta p { color: var(--texto-medio); font-size: 15px; line-height: 1.7; }
+.tarjeta .impacto-lista,
+.tarjeta .impacto { display: grid; gap: 10px; }
+.tarjeta .impacto-item {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--borde);
+  font-size: 14.5px;
+  color: var(--texto-medio);
+}
+.tarjeta .impacto-item:last-child { border-bottom: none; padding-bottom: 0; }
+.tarjeta .impacto-item b {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(20px, 1.9vw, 26px);
+  color: var(--acento);
+  white-space: nowrap;
+}
+.tarjeta .impacto-item span { color: var(--texto-bajo); font-size: 12.5px; display: block; }
+
+/* Contenedores de las gráficas canvas */
+.tarjeta .grafica,
+.tarjeta canvas {
+  width: 100%;
+  height: clamp(200px, 24vh, 260px);
+}
+.tarjeta canvas { touch-action: pan-y; }
+
+/* Leyenda clicable de las gráficas (chart-engine la genera) */
+.leyenda,
+.leyenda-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+.leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-medio);
+  background: var(--panel-alto);
+  transition: border-color 0.25s ease, color 0.25s ease,
+              opacity 0.25s ease, transform 0.25s ease;
+}
+.leyenda-item .muestra,
+.leyenda-item .leyenda-color,
+.leyenda-item i {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.leyenda-item:hover { transform: translateY(-1px); border-color: var(--borde); }
+.leyenda-item.is-inactiva,
+.leyenda-item[aria-pressed="false"] { opacity: 0.38; }
+
+/* Dona + serie de menciones lado a lado */
+.tarjeta .redes-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 28px);
+}
+.tarjeta .donut-wrap,
+.tarjeta .dona { position: relative; }
+.tarjeta .donut-wrap canvas,
+.tarjeta .dona canvas { height: 180px; }
+
+/* Menciones por hora (cifra viva) */
+.tarjeta .menciones {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.tarjeta .menciones b {
+  font-size: clamp(28px, 2.6vw, 36px);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+}
+.tarjeta .menciones span { font-size: 12.5px; color: var(--texto-bajo); }
+
+/* Cronograma: tarjetas de fase con barra de avance */
+.cronograma { display: grid; gap: 14px; }
+.fase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--panel-alto);
+}
+.fase .fase-nombre {
+  font-family: var(--serif);
+  font-size: 16.5px;
+  color: var(--texto);
+}
+.fase .fase-periodo {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--texto-bajo);
+  font-variant-numeric: tabular-nums;
+}
+.fase .fase-avance,
+.barra-avance {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.barra-avance .progreso,
+.barra-avance .pista {
+  flex: 1;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--borde);
+  overflow: hidden;
+  position: relative;
+}
+.barra-avance .progreso::before,
+.barra-avance .pista::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--avance, 35) * 1%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--acento) 70%, var(--fondo)), var(--acento));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--acento) 45%, transparent);
+}
+.barra-avance .avance-texto,
+.barra-avance .progresoTexto {
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--acento);
+  min-width: 3.2em;
+  text-align: right;
+}
+/* Variante texto plano "35%" (si script.js suelta el texto suelto) */
+.progreso {
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--acento);
+}
+
+/* Chips y hashtags (colonias, etiquetas del panel, redes) */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--panel-alto);
+  color: var(--texto-medio);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+.chip:hover { color: var(--texto); border-color: var(--acento); transform: translateY(-1px); }
+.chip b { color: var(--texto); font-weight: 700; }
+
+.hashtag {
+  padding: 6px 13px;
+  border: 1px solid color-mix(in srgb, var(--positivo) 40%, var(--borde));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--positivo) 10%, transparent);
+  color: var(--positivo);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Nota de metodología: caja punteada dorada */
+.nota-metodo {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: clamp(16px, 2vw, 24px);
+  border: 1px dashed color-mix(in srgb, var(--dorado) 55%, transparent);
+  border-radius: var(--radio-chico);
+  background: color-mix(in srgb, var(--dorado) 5%, var(--panel));
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--texto-bajo);
+}
+.nota-metodo::before {
+  content: "※";
+  color: var(--dorado);
+  font-size: 17px;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+.nota-metodo strong { color: var(--dorado-claro); }
+
+/* --------------------------------------------------------------------------
+   9) PIE
+   -------------------------------------------------------------------------- */
+footer.pie {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(36px, 7vh, 72px);
+  padding: clamp(22px, 4vh, 36px) var(--padre-x);
+  border-top: 1px solid var(--borde);
+  text-align: center;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  color: var(--texto-bajo);
+}
+footer.pie .pie-linea { margin-bottom: 6px; color: var(--texto-medio); }
+footer.pie b { color: var(--dorado); font-weight: 600; }
+
+/* --------------------------------------------------------------------------
+   10) RESPONSIVO
+   -------------------------------------------------------------------------- */
+/* Escritorio mediano: retícula del banner más compacta */
+@media (max-width: 1100px) {
+  article.banner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: clamp(20px, 3vw, 36px);
+  }
+  .banner-numero { font-size: clamp(110px, 13vw, 170px); }
+  .banner-stats { gap: 10px; }
+}
+
+/* Móvil / tablet chica: todo a columna, stats en fila con scroll */
+@media (max-width: 899px) {
+  article.banner {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: auto;
+    align-content: start;
+  }
+  .banner-numero {
+    top: -0.2em; right: 0;
+    font-size: clamp(96px, 22vw, 150px);
+  }
+  .banner-stats {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(150px, 1fr);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 6px;
+    margin: 0 calc(-1 * clamp(18px, 5vw, 28px));
+    padding-left: clamp(18px, 5vw, 28px);
+    padding-right: clamp(18px, 5vw, 28px);
+    scrollbar-width: none;
+  }
+  .banner-stats::-webkit-scrollbar { display: none; }
+  .stat { scroll-snap-align: start; }
+  .banner-boton { width: 100%; justify-content: center; }
+  .panel-cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .tarjeta .redes-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Móvil estrecho: barra compacta (solo punto + una cifra) */
+@media (max-width: 700px) {
+  header.barra {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  .pulso .pulso-item:not(:first-of-type),
+  .pulso figure:not(:first-of-type),
+  .pulso .pulso-cifra:not(:first-of-type) { display: none; }
+  .pulso { gap: 12px; }
+  .hora { font-size: 12px; }
+  .logo svg { width: 28px; height: 28px; }
+  h2.banner-titular { font-size: clamp(26px, 7.4vw, 34px); }
+  .panel-cabecera { padding: 16px 4px 14px; }
+  .panel-cabecera h3 { font-size: clamp(20px, 5.6vw, 26px); }
+  .panel-cerrar { width: 40px; height: 40px; }
+  .tarjeta .grafica,
+  .tarjeta canvas { height: clamp(180px, 26vh, 220px); }
+}
+
+/* --------------------------------------------------------------------------
+   11) MOVIMIENTO REDUCIDO (accesibilidad)
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  [data-reveal] { opacity: 1; transform: none; }
+  .pulso-punto { animation: none; opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   12) RANKING MUNICIPAL + BARRA DE MONITOREO (components/ranking.js)
+   -------------------------------------------------------------------------- */
+#ranking-municipal { position: sticky; top: 66px; z-index: 40; background: var(--fondo); border-bottom: 1px solid var(--borde); max-width: var(--ancho-lectura); margin: 18px auto 26px; padding: 18px var(--padre-x); }
+.rk-cabeza { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 12px; }
+.rk-titulo { font-family: var(--serif); font-size: 22px; font-weight: 700; margin: 0; }
+.rk-sub { font-size: 12.5px; color: var(--texto-bajo); max-width: 52ch; margin: 0; }
+
+/* Sin barra visible: el desplazamiento se descubre por el degradado de los
+   bordes y por el arrastre (la pista responde a rueda, mouse y teclado).
+   Asi no queda la linea fea debajo de los circulos. */
+.rk-scroll {
+  overflow-x: auto; overflow-y: hidden; padding: 6px 30px 10px;
+  scrollbar-width: none; -ms-overflow-style: none; cursor: grab;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent);
+}
+.rk-scroll::-webkit-scrollbar { display: none; }
+.rk-scroll.es-arrastrando { cursor: grabbing; }
+.rk-scroll.es-arrastrando .rk-card { user-select: none; }
+.rk-pista { position: relative; height: 330px; min-width: 100%; }
+.rk-card {
+  position: absolute; top: 0; left: 0; width: 240px;
+  transform-origin: left top;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 20px 16px 16px;
+  background: var(--panel); border: 1px solid var(--borde);
+  border-radius: var(--radio); box-shadow: var(--sombra);
+  transition: transform .7s cubic-bezier(.22,1,.36,1), border-color .3s, box-shadow .3s;
+}
+.rk-card:hover, .rk-card:focus-visible { border-color: color-mix(in srgb, var(--dorado) 45%, var(--borde)); }
+.rk-lider {
+  z-index: 2;
+  border-color: var(--dorado);
+  box-shadow: var(--sombra), 0 0 0 1px color-mix(in srgb, var(--dorado) 30%, transparent), 0 0 26px color-mix(in srgb, var(--dorado) 18%, transparent);
+}
+.rk-pos {
+  position: absolute; top: 12px; left: 12px; min-width: 26px; height: 26px; padding: 0 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; background: var(--panel-alto); border: 1px solid var(--borde);
+  font: 600 11px/1 var(--sans); color: var(--texto-medio);
+}
+.rk-lider .rk-pos { background: var(--dorado); border-color: var(--dorado); color: #130D10; }
+
+/* El gauge recorta a circulo (overflow hidden): cualquier foto dentro
+   (.rk-foto) queda contenida en el anillo y JAMAS tapa el texto de la
+   tarjeta. La foto es la capa de FONDO; el anillo SVG va encima (z-index 1). */
+.rk-gauge { position: relative; width: 84px; height: 84px; overflow: hidden; border-radius: 50%; }
+.rk-gauge svg { position: relative; z-index: 1; pointer-events: none; display: block; width: 84px; height: 84px; }
+.rk-pista-arco { fill: none; stroke: var(--borde); stroke-width: 7; }
+.rk-arco {
+  fill: none; stroke-width: 7; stroke-linecap: round;
+  stroke-dasharray: 226.2; stroke-dashoffset: 226.2;
+  transform: rotate(-90deg); transform-origin: 42px 42px;
+  transition: stroke-dashoffset .8s cubic-bezier(.22,1,.36,1);
+}
+.rk-lider .rk-arco { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--dorado) 55%, transparent)); }
+/* Monograma: fondo completo del circulo (igual que la foto), en tonalidad
+   vino oscura (--panel-alto). Se eligio sobre blanco y negro porque
+   acompana la paleta sin generar glare y se percibe como un medallon mas,
+   no como un hueco (decision de diseno 2026-10-30). */
+.rk-iniciales {
+  position: absolute; inset: 9px; z-index: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font: 700 20px var(--serif); letter-spacing: 1px; color: var(--texto-medio);
+  background: var(--panel-alto);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--borde) 90%, transparent);
+}
+
+/* Foto del alcalde como CAPA DE FONDO del circulo: enmarcada POR el anillo
+   (inset 9px, z-index 0) y el anillo SVG (z-index 1) se dibuja ENCIMA, asi el
+   rostro queda enmarcado DENTRO del circulo y nunca tapa cifras ni letras
+   de la tarjeta. Aplica a cualquier foto futura de cualquier municipio.
+   El campo `foto` de municipios.js apunta a assets/alcaldes/<id>.<ext>;
+   si la imagen no existe, ranking.js la elimina y queda el monograma
+   (la pagina nunca rompe).
+   NOTA: en CSS los comentarios NO se anidan: un cierre dentro de otro
+   comentario cierra el bloque y la regla siguiente queda invalida
+   (bug encontrado y corregido el 2026-11-05). */
+.rk-foto {
+  position: absolute; inset: 9px; z-index: 0;
+  width: calc(100% - 18px); height: calc(100% - 18px);
+  border-radius: 50%; object-fit: cover;
+  background: var(--panel-alto);
+}
+
+.rk-tema { font: 600 9.5px var(--sans); letter-spacing: 1.6px; text-transform: uppercase; color: var(--texto-bajo); }
+.rk-nombre { margin: 0; font: 600 14px var(--sans); color: var(--texto); text-align: center; }
+.rk-rol { margin: 0; font: 400 11px var(--sans); color: var(--texto-bajo); text-align: center; }
+.rk-dato { display: flex; align-items: baseline; gap: 8px; margin-top: 10px; }
+.rk-pct b { font: 700 26px var(--sans); font-variant-numeric: tabular-nums; color: var(--texto); }
+.rk-pct small { font: 600 13px var(--sans); color: var(--texto-medio); }
+.rk-delta { font: 600 11px var(--sans); padding: 3px 8px; border-radius: 999px; background: var(--panel-alto); border: 1px solid var(--borde); color: var(--texto-medio); }
+.rk-delta.es-positivo { color: var(--positivo); border-color: color-mix(in srgb, var(--positivo) 40%, var(--borde)); }
+.rk-delta.es-negativo { color: var(--negativo); border-color: color-mix(in srgb, var(--negativo) 40%, var(--borde)); }
+
+/* Popover compartido de sentimiento (hermano de .rk-scroll: nunca recortado). */
+.rk-pop {
+  position: absolute; z-index: 30; min-width: 230px; max-width: 290px;
+  background: var(--panel-alto); border: 1px solid color-mix(in srgb, var(--dorado) 35%, var(--borde));
+  border-radius: var(--radio-chico); box-shadow: var(--sombra-alta); padding: 14px 16px 12px;
+  opacity: 0; visibility: hidden; transform: translateY(4px); pointer-events: none;
+  transition: opacity .25s, transform .25s, visibility .25s;
+}
+.rk-pop.is-visible { opacity: 1; visibility: visible; transform: translateY(0); }
+.rk-pop-titulo { margin: 0 0 10px; font: 600 10px var(--sans); letter-spacing: 1.4px; text-transform: uppercase; color: var(--texto-bajo); }
+.rk-pop-linea { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.rk-pop-palabra { font: 700 15px var(--serif); letter-spacing: .5px; opacity: .55; }
+.rk-pop-linea.rk-dominante .rk-pop-palabra { opacity: 1; }
+.rk-pop-palabra.es-positivo { color: var(--positivo); }
+.rk-pop-palabra.es-neutro { color: var(--texto-medio); }
+.rk-pop-palabra.es-negativo { color: var(--negativo); }
+.rk-pop-valor { font: 600 12px var(--sans); font-variant-numeric: tabular-nums; color: var(--texto-medio); }
+.rk-pop-tema { margin: 10px 0 0; font: 400 12px/1.5 var(--sans); color: var(--texto-medio); }
+.rk-pop-tema strong { color: var(--dorado-claro); }
+.rk-pop-nota { margin: 10px 0 0; padding-top: 8px; border-top: 1px solid var(--borde); font: 400 10px/1.5 var(--sans); color: var(--texto-bajo); }
+
+/* Barra de noticias estilo NOTICIERO DE TV (rediseño 2026-10-30):
+   placa ancha de lado a lado, etiqueta roja en caja con corte diagonal,
+   letras grandes (15–16px) y movimiento lento (55s) para que se pueda leer
+   sin que la vista se lastime; se detiene al pasar el cursor o al enfocar.
+   Referencias de diseño consultadas: barras inferiores de noticiero
+   ("lower third") y marquesinas tipo CNN/Bloomberg; ver
+   docs/diseno/barra-de-noticias.md para el detalle y las fuentes. */
+.rk-ticker {
+  position: relative; display: flex; align-items: stretch;
+  margin-top: 16px; border-radius: var(--radio-chico); overflow: hidden;
+  background: linear-gradient(180deg, var(--panel-alto), var(--panel));
+  border: 1px solid var(--borde); box-shadow: var(--sombra);
+}
+.ticker-etiqueta {
+  flex: none; align-self: stretch; display: inline-flex; align-items: center; gap: 9px;
+  padding: 0 20px 0 16px; font: 700 11px var(--sans); letter-spacing: 2.4px;
+  text-transform: uppercase; color: #FBF3EC;
+  background: linear-gradient(180deg, #A82730, #6E1520);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
+}
+.ticker-etiqueta::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; flex: none;
+  background: #F6B93B; box-shadow: 0 0 0 3px rgba(246, 185, 59, .22);
+  animation: pulso-latido 1.8s infinite;
+}
+.ticker-ventana {
+  flex: 1; overflow: hidden; min-width: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+}
+.ticker-pista { display: inline-flex; align-items: center; white-space: nowrap; animation: deslizar 55s linear infinite; will-change: transform; }
+.rk-ticker:hover .ticker-pista, .rk-ticker:focus-within .ticker-pista { animation-play-state: paused; }
+.ticker-grupo { display: inline-flex; align-items: center; gap: 40px; padding: 14px 20px 14px 22px; }
+.ticker-item { display: inline-flex; align-items: center; gap: 10px; font: 500 15px/1.3 var(--sans); color: var(--texto-medio); }
+.ticker-item::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--texto-bajo); flex: none; }
+.ticker-item.es-positivo::before { background: var(--positivo); box-shadow: 0 0 0 3px color-mix(in srgb, var(--positivo) 20%, transparent); }
+.ticker-item.es-negativo::before { background: var(--negativo); box-shadow: 0 0 0 3px color-mix(in srgb, var(--negativo) 20%, transparent); }
+.ticker-item strong { font-weight: 700; font-size: 16px; letter-spacing: .3px; color: var(--texto); }
+.ticker-nota {
+  flex: none; align-self: center; margin-right: 14px;
+  font: 600 9.5px var(--sans); letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--texto-bajo); background: var(--panel-alto);
+  border: 1px solid var(--borde); border-radius: 999px; padding: 5px 10px;
+}
+@keyframes deslizar { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (max-width: 700px) {
+  .ticker-item { font-size: 13.5px; }
+  .ticker-item strong { font-size: 14.5px; }
+  .ticker-nota { display: none; }
+}
+
+/* Identificador de impacto, esquina superior derecha del banner: la placa que
+   se lee de lejos (puntos de aprobación + alcance en redes). La llevan los
+   seis proyectos; script.js la arma con `pronostico` e `impactoRed`. */
+.banner-identificador {
+  position: absolute; z-index: 3;
+  top: clamp(16px, 2.6vh, 26px); right: clamp(16px, 2.6vw, 30px);
+  min-width: 198px; padding: 14px 18px 12px;
+  display: grid; gap: 3px; text-align: right;
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--acento) 18%, var(--panel-alto)), var(--panel));
+  border: 1px solid color-mix(in srgb, var(--acento) 48%, var(--borde));
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra);
+}
+.banner-identificador::before {
+  content: ''; position: absolute; top: 0; right: 0; width: 46%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--acento));
+}
+.banner-identificador .bi-rotulo {
+  font: 600 9.5px var(--sans); letter-spacing: 1.7px; text-transform: uppercase;
+  color: var(--texto-bajo);
+}
+.banner-identificador .bi-valor { display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; }
+.banner-identificador .bi-valor b {
+  font: 700 40px var(--serif); line-height: 1; color: var(--dorado-claro);
+  font-variant-numeric: tabular-nums;
+}
+.banner-identificador .bi-valor small {
+  font: 700 12px var(--sans); color: var(--acento);
+  text-transform: uppercase; letter-spacing: 1.4px;
+}
+.banner-identificador .bi-detalle { font: 400 11.5px/1.4 var(--sans); color: var(--texto-medio); }
+.banner-identificador .bi-detalle b { font-weight: 700; color: var(--texto); font-variant-numeric: tabular-nums; }
+.banner-identificador .bi-pie {
+  margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--borde);
+  font: 600 9px var(--sans); letter-spacing: 1.3px; text-transform: uppercase; color: var(--texto-bajo);
+}
+
+/* Bloque ESTANDARIZADO de impacto en redes (panel de detalle): la misma
+   cadena de cuatro pasos en los seis proyectos, más el cierre en puntos de
+   aprobación. script.js la construye con `impactoRed`. */
+.impacto-cadena { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.impacto-paso {
+  position: relative; display: grid; gap: 4px; align-content: start;
+  padding: 14px 14px 13px; border-radius: var(--radio-chico);
+  background: linear-gradient(180deg, var(--panel-alto), var(--panel));
+  border: 1px solid var(--borde);
+}
+.impacto-paso small { font: 700 9.5px var(--sans); letter-spacing: 1.6px; color: var(--acento); }
+.impacto-paso .paso-rotulo {
+  font: 600 11px var(--sans); letter-spacing: .8px; text-transform: uppercase; color: var(--texto-bajo);
+}
+.impacto-paso b { font: 700 20px var(--serif); line-height: 1.15; color: var(--texto); }
+.impacto-paso .paso-nota { font: 400 11px/1.45 var(--sans); color: var(--texto-bajo); }
+/* Flecha de enlace entre pasos (solo donde caben los cuatro). */
+@media (min-width: 900px) {
+  .impacto-paso:not(:last-child)::after {
+    content: ''; position: absolute; right: -7px; top: 50%; z-index: 2;
+    width: 8px; height: 8px;
+    border-top: 2px solid var(--acento); border-right: 2px solid var(--acento);
+    transform: translateY(-50%) rotate(45deg); opacity: .7;
+  }
+}
+.impacto-cierre {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
+  margin-top: 12px; padding: 12px 16px; border-radius: var(--radio-chico);
+  background: color-mix(in srgb, var(--acento) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--acento) 38%, transparent);
+}
+.impacto-cierre small {
+  font: 600 10px var(--sans); letter-spacing: 1.4px; text-transform: uppercase; color: var(--texto-bajo);
+}
+.impacto-cierre b { font: 700 22px var(--serif); color: var(--dorado-claro); }
+.impacto-cierre .impacto-nota { flex: 1 1 260px; font: 400 12px/1.55 var(--sans); color: var(--texto-medio); }
+
+/* En móvil la placa deja de flotar: se vuelve franja completa al inicio. */
+@media (max-width: 899px) {
+  .banner-identificador {
+    position: relative; order: -1; top: 0; right: 0;
+    min-width: 0; width: 100%; text-align: left; margin-bottom: 6px;
+  }
+  .banner-identificador .bi-valor { justify-content: flex-start; }
+  .banner-identificador .bi-valor b { font-size: 34px; }
+  .impacto-cadena { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.panel-pronostico {
+  margin: 12px 0 0; padding: 10px 12px; border-radius: var(--radio-chico);
+  background: color-mix(in srgb, var(--acento) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--acento) 30%, transparent);
+  font: 400 12.5px/1.5 var(--sans); color: var(--texto-medio);
+}
+.panel-pronostico strong { color: var(--texto); }
+
+@media (max-width: 899px) {
+  .rk-card { width: 210px; }
+  .rk-pista { height: 310px; }
+}
+@media (max-width: 700px) {
+  .rk-titulo { font-size: 19px; }
+  .rk-card { width: 196px; }
+  .rk-ticker { border-radius: var(--radio-chico); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-pista { animation: none; }
+  .ticker-ventana { overflow-x: auto; }
+}
+
+/* --------------------------------------------------------------------------
+   FASE 4 (2026-11-06): inmersión visual y responsividad total (móvil → 4K).
+   Apéndice: no toca reglas existentes, solo añade transiciones suaves y
+   sube el ancho de lectura en pantallas grandes.
+   -------------------------------------------------------------------------- */
+.rk-card { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease, border-color 0.45s ease; }
+.rk-card:hover { border-color: var(--dorado); box-shadow: var(--sombra-alta); }
+.rk-scroll { scroll-behavior: smooth; }
+
+@media (min-width: 1400px) { :root { --ancho-lectura: 1360px; } }
+@media (min-width: 1800px) { :root { --ancho-lectura: 1680px; } }
+@media (min-width: 2400px) { :root { --ancho-lectura: 2080px; } }
+
+@media (max-width: 700px) {
+  #ranking-municipal { padding: 14px; top: 100px; }
+  .rk-scroll { padding: 6px 14px 10px; }
+}
+
+.datos-info { font-size: 11.5px; color: var(--texto-bajo); margin-top: 4px; opacity: 0.85; }

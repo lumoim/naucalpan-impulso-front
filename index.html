@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naucalpan Impulso — Plataforma de Impacto Social</title>
+<meta name="description" content="Cartera de seis proyectos prioritarios para Naucalpan de Juárez con estimaciones de impacto social, aprobación ciudadana y conversación en redes.">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="styles.css?v=20261116">
+</head>
+<body>
+
+<!-- Fondo vivo: malla de nodos dorados (reveal.js la anima) -->
+<canvas id="fondo-vivo" aria-hidden="true"></canvas>
+
+<!-- Barra fija: marca, Pulso Ciudadano y hora local -->
+<header class="barra">
+  <div class="logo">
+    <svg viewBox="0 0 34 34" fill="none" aria-hidden="true">
+      <path d="M17 3 L29 10 L29 24 L17 31 L5 24 L5 10 Z" fill="rgba(201,162,39,0.10)" stroke="#C9A227" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M17 3 L17 17 M29 10 L17 17 M29 24 L17 17 M17 31 L17 17 M5 24 L17 17 M5 10 L17 17" stroke="rgba(201,162,39,0.55)" stroke-width="1"/>
+      <circle cx="17" cy="17" r="2.6" fill="#E3BC3E"/>
+      <circle cx="17" cy="3"  r="2" fill="#E3BC3E"/>
+      <circle cx="29" cy="10" r="1.7" fill="#C9A227"/>
+      <circle cx="29" cy="24" r="1.7" fill="#C9A227"/>
+      <circle cx="17" cy="31" r="1.7" fill="#C9A227"/>
+      <circle cx="5"  cy="24" r="1.7" fill="#C9A227"/>
+      <circle cx="5"  cy="10" r="1.7" fill="#C9A227"/>
+    </svg>
+    <span class="logo-nombre">Naucalpan <strong>Impulso</strong></span>
+  </div>
+  <div class="pulso" aria-label="Pulso Ciudadano en vivo">
+    <span class="pulso-punto" aria-hidden="true"></span>
+    <figure class="pulso-item"><b id="cifra-menciones">0</b><span>menciones/hora</span></figure>
+    <figure class="pulso-item"><b id="cifra-positivo">0%</b><span>sentimiento positivo</span></figure>
+    <figure class="pulso-item"><b id="cifra-avance">0%</b><span>avance del programa</span></figure>
+  </div>
+  <span class="hora" id="hora">--:--</span>
+</header>
+
+<!-- Tablero: ranking municipal en vivo + barra de monitoreo (lo construye components/ranking.js) -->
+<section id="ranking-municipal"></section>
+
+<!-- Reel de banners: script.js genera un article.banner por proyecto -->
+<main id="reel" aria-label="Cartera de proyectos prioritarios"></main>
+
+<!-- Panel de detalle: overlay a pantalla completa, se abre en sitio -->
+<div id="panel" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Análisis del proyecto"></div>
+
+<footer class="pie">
+  <p class="pie-linea"><b>Naucalpan Impulso</b> · Cartera de proyectos prioritarios · Naucalpan de Juárez, Estado de México</p>
+  <p>Cifras actuales de muestra</p>
+  <p class="datos-info" id="datos-info"></p>
+</footer>
+
+<!-- Scripts clásicos en orden: motor, pulso, animaciones, tablero, datos, integrador -->
+<script src="components/chart-engine.js"></script>
+<script src="components/pulse.js"></script>
+<script src="components/reveal.js"></script>
+<script src="components/ranking.js"></script>
+<script src="data/proyectos.js"></script>
+<script src="data/municipios.js"></script>
+<script src="data-override.js"></script>
+<script src="script.js?v=20261116"></script>
+<script src="boot.js"></script>
+</body>
+</html>

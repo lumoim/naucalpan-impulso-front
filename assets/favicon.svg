@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" fill="none">
+  <!-- Emblema Naucalpan Impulso: hexágono-nodo dorado (idéntico al de la barra) -->
+  <rect width="34" height="34" rx="7" fill="#130D10"/>
+  <path d="M17 3 L29 10 L29 24 L17 31 L5 24 L5 10 Z" fill="rgba(201,162,39,0.10)" stroke="#C9A227" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M17 3 L17 17 M29 10 L17 17 M29 24 L17 17 M17 31 L17 17 M5 24 L17 17 M5 10 L17 17" stroke="rgba(201,162,39,0.55)" stroke-width="1"/>
+  <circle cx="17" cy="17" r="2.6" fill="#E3BC3E"/>
+  <circle cx="17" cy="3"  r="2"   fill="#E3BC3E"/>
+  <circle cx="29" cy="10" r="1.7" fill="#C9A227"/>
+  <circle cx="29" cy="24" r="1.7" fill="#C9A227"/>
+  <circle cx="17" cy="31" r="1.7" fill="#C9A227"/>
+  <circle cx="5"  cy="24" r="1.7" fill="#C9A227"/>
+  <circle cx="5"  cy="10" r="1.7" fill="#C9A227"/>
+</svg>
